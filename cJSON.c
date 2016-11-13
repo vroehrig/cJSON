@@ -207,18 +207,18 @@ static const char *parse_number(cJSON *item, const char *num)
 typedef struct
 {
     char *buffer;
-    int length;
-    int offset;
+    size_t length;
+    size_t offset;
 } printbuffer;
 
 
 #define max(a, b) ((a > b) ? a : b)
 
 /* realloc printbuffer if necessary to have at least "needed" bytes more */
-static char* ensure(printbuffer *p, int needed)
+static char* ensure(printbuffer *p, size_t needed)
 {
     char *newbuffer = NULL;
-    int newsize = 0;
+    size_t newsize = 0;
     if (!p || !p->buffer)
     {
         return NULL;
@@ -255,7 +255,7 @@ static char* ensure(printbuffer *p, int needed)
 }
 
 /* calculate the new length of the string in a printbuffer */
-static int update(const printbuffer *p)
+static size_t update(const printbuffer *p)
 {
     char *str = NULL;
     if (!p || !p->buffer)
@@ -447,7 +447,7 @@ static const char *parse_string(cJSON *item, const char *str, const char **ep)
     const char *end_ptr =str + 1;
     char *ptr2 = NULL;
     char *out = NULL;
-    int len = 0;
+    size_t len = 0;
     unsigned uc = 0;
     unsigned uc2 = 0;
 
@@ -623,7 +623,7 @@ static char *print_string_ptr(const char *str, printbuffer *p)
     const char *ptr = NULL;
     char *ptr2 = NULL;
     char *out = NULL;
-    int len = 0;
+    size_t len = 0;
     bool flag = false;
     unsigned char token = '\0';
 
@@ -770,11 +770,11 @@ static char *print_string(const cJSON *item, printbuffer *p)
 
 /* Predeclare these prototypes. */
 static const char *parse_value(cJSON *item, const char *value, const char **ep);
-static char *print_value(const cJSON *item, int depth, bool fmt, printbuffer *p);
+static char *print_value(const cJSON *item, size_t depth, bool fmt, printbuffer *p);
 static const char *parse_array(cJSON *item, const char *value, const char **ep);
-static char *print_array(const cJSON *item, int depth, bool fmt, printbuffer *p);
+static char *print_array(const cJSON *item, size_t depth, bool fmt, printbuffer *p);
 static const char *parse_object(cJSON *item, const char *value, const char **ep);
-static char *print_object(const cJSON *item, int depth, bool fmt, printbuffer *p);
+static char *print_object(const cJSON *item, size_t depth, bool fmt, printbuffer *p);
 
 /* Utility to jump whitespace and cr/lf */
 static const char *skip(const char *in)
@@ -844,7 +844,7 @@ char *cJSON_PrintUnformatted(const cJSON *item)
     return print_value(item, 0, 0, 0);
 }
 
-char *cJSON_PrintBuffered(const cJSON *item, int prebuffer, bool fmt)
+char *cJSON_PrintBuffered(const cJSON *item, size_t prebuffer, bool fmt)
 {
     printbuffer p;
     p.buffer = (char*)cJSON_malloc(prebuffer);
@@ -908,7 +908,7 @@ static const char *parse_value(cJSON *item, const char *value, const char **ep)
 }
 
 /* Render a value to text. */
-static char *print_value(const cJSON *item, int depth, bool fmt, printbuffer *p)
+static char *print_value(const cJSON *item, size_t depth, bool fmt, printbuffer *p)
 {
     char *out = NULL;
 
@@ -1054,16 +1054,16 @@ static const char *parse_array(cJSON *item,const char *value,const char **ep)
 }
 
 /* Render an array to text */
-static char *print_array(const cJSON *item, int depth, bool fmt, printbuffer *p)
+static char *print_array(const cJSON *item, size_t depth, bool fmt, printbuffer *p)
 {
     char **entries;
     char *out = NULL;
     char *ptr = NULL;
     char *ret = NULL;
-    int len = 5;
+    size_t len = 5;
     cJSON *child = item->child;
-    int numentries = 0;
-    int i = 0;
+    size_t numentries = 0;
+    size_t i = 0;
     bool fail = false;
     size_t tmplen = 0;
 
@@ -1315,7 +1315,7 @@ static const char *parse_object(cJSON *item, const char *value, const char **ep)
 }
 
 /* Render an object to text. */
-static char *print_object(const cJSON *item, int depth, bool fmt, printbuffer *p)
+static char *print_object(const cJSON *item, size_t depth, bool fmt, printbuffer *p)
 {
     char **entries = NULL;
     char **names = NULL;
@@ -1323,11 +1323,11 @@ static char *print_object(const cJSON *item, int depth, bool fmt, printbuffer *p
     char *ptr = NULL;
     char *ret = NULL;
     char *str = NULL;
-    int len = 7;
-    int i = 0;
-    int j = 0;
+    size_t len = 7;
+    size_t i = 0;
+    size_t j = 0;
     cJSON *child = item->child;
-    int numentries = 0;
+    size_t numentries = 0;
     bool fail = false;
     size_t tmplen = 0;
 
@@ -1590,10 +1590,10 @@ static char *print_object(const cJSON *item, int depth, bool fmt, printbuffer *p
 }
 
 /* Get Array size/item / object item. */
-int    cJSON_GetArraySize(const cJSON *array)
+size_t cJSON_GetArraySize(const cJSON *array)
 {
     cJSON *c = array->child;
-    int i = 0;
+    size_t i = 0;
     while(c)
     {
         i++;
@@ -1602,7 +1602,7 @@ int    cJSON_GetArraySize(const cJSON *array)
     return i;
 }
 
-cJSON *cJSON_GetArrayItem(const cJSON *array, int item)
+cJSON *cJSON_GetArrayItem(const cJSON *array, size_t item)
 {
     cJSON *c = array ? array->child : NULL;
     while (c && item > 0)
@@ -1718,7 +1718,7 @@ void cJSON_AddItemReferenceToObject(cJSON *object, const char *string, cJSON *it
     cJSON_AddItemToObject(object, string, create_reference(item));
 }
 
-cJSON *cJSON_DetachItemFromArray(cJSON *array, int which)
+cJSON *cJSON_DetachItemFromArray(cJSON *array, size_t which)
 {
     cJSON *c = array->child;
     while (c && (which > 0))
@@ -1750,14 +1750,14 @@ cJSON *cJSON_DetachItemFromArray(cJSON *array, int which)
     return c;
 }
 
-void cJSON_DeleteItemFromArray(cJSON *array, int which)
+void cJSON_DeleteItemFromArray(cJSON *array, size_t which)
 {
     cJSON_Delete(cJSON_DetachItemFromArray(array, which));
 }
 
 cJSON *cJSON_DetachItemFromObject(cJSON *object, const char *string)
 {
-    int i = 0;
+    size_t i = 0;
     cJSON *c = object->child;
     while (c && cJSON_strcasecmp(c->string,string))
     {
@@ -1778,7 +1778,7 @@ void cJSON_DeleteItemFromObject(cJSON *object, const char *string)
 }
 
 /* Replace array/object items with new ones. */
-void cJSON_InsertItemInArray(cJSON *array, int which, cJSON *newitem)
+void cJSON_InsertItemInArray(cJSON *array, size_t which, cJSON *newitem)
 {
     cJSON *c = array->child;
     while (c && (which > 0))
@@ -1804,7 +1804,7 @@ void cJSON_InsertItemInArray(cJSON *array, int which, cJSON *newitem)
     }
 }
 
-void cJSON_ReplaceItemInArray(cJSON *array, int which, cJSON *newitem)
+void cJSON_ReplaceItemInArray(cJSON *array, size_t which, cJSON *newitem)
 {
     cJSON *c = array->child;
     while (c && (which > 0))
@@ -1836,7 +1836,7 @@ void cJSON_ReplaceItemInArray(cJSON *array, int which, cJSON *newitem)
 
 void cJSON_ReplaceItemInObject(cJSON *object, const char *string, cJSON *newitem)
 {
-    int i = 0;
+    size_t i = 0;
     cJSON *c = object->child;
     while(c && cJSON_strcasecmp(c->string, string))
     {
@@ -1954,9 +1954,9 @@ cJSON *cJSON_CreateObject(void)
 }
 
 /* Create Arrays: */
-cJSON *cJSON_CreateIntArray(const int *numbers, int count)
+cJSON *cJSON_CreateIntArray(const int *numbers, size_t count)
 {
-    int i = 0;
+    size_t i = 0;
     cJSON *n = NULL;
     cJSON *p = NULL;
     cJSON *a = cJSON_CreateArray();
@@ -1982,9 +1982,9 @@ cJSON *cJSON_CreateIntArray(const int *numbers, int count)
     return a;
 }
 
-cJSON *cJSON_CreateFloatArray(const float *numbers, int count)
+cJSON *cJSON_CreateFloatArray(const float *numbers, size_t count)
 {
-    int i = 0;
+    size_t i = 0;
     cJSON *n = NULL;
     cJSON *p = NULL;
     cJSON *a = cJSON_CreateArray();
@@ -2010,9 +2010,9 @@ cJSON *cJSON_CreateFloatArray(const float *numbers, int count)
     return a;
 }
 
-cJSON *cJSON_CreateDoubleArray(const double *numbers, int count)
+cJSON *cJSON_CreateDoubleArray(const double *numbers, size_t count)
 {
-    int i = 0;
+    size_t i = 0;
     cJSON *n = NULL;
     cJSON *p = NULL;
     cJSON *a = cJSON_CreateArray();
@@ -2038,9 +2038,9 @@ cJSON *cJSON_CreateDoubleArray(const double *numbers, int count)
     return a;
 }
 
-cJSON *cJSON_CreateStringArray(const char **strings, int count)
+cJSON *cJSON_CreateStringArray(const char **strings, size_t count)
 {
-    int i = 0;
+    size_t i = 0;
     cJSON *n = NULL;
     cJSON *p = NULL;
     cJSON *a = cJSON_CreateArray();
