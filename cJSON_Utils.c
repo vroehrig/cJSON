@@ -94,7 +94,7 @@ static void cJSONUtils_PointerEncodedstrcpy(char *d, const char *s)
 
 char *cJSONUtils_FindPointerFromObjectTo(cJSON *object, cJSON *target)
 {
-    int type = object->type;
+    unsigned int type = object->type;
     size_t c = 0;
     cJSON *obj = 0;
 

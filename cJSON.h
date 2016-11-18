@@ -31,16 +31,16 @@ extern "C"
 #include <stddef.h>
 
 /* cJSON Types: */
-#define cJSON_False  (1 << 0)
-#define cJSON_True   (1 << 1)
-#define cJSON_NULL   (1 << 2)
-#define cJSON_Number (1 << 3)
-#define cJSON_String (1 << 4)
-#define cJSON_Array  (1 << 5)
-#define cJSON_Object (1 << 6)
+#define cJSON_False (1U << 0)
+#define cJSON_True (1U << 1)
+#define cJSON_NULL (1U << 2)
+#define cJSON_Number (1U << 3)
+#define cJSON_String (1U << 4)
+#define cJSON_Array (1U << 5)
+#define cJSON_Object (1U << 6)
 
-#define cJSON_IsReference 256
-#define cJSON_StringIsConst 512
+#define cJSON_IsReference (1U << 8)
+#define cJSON_StringIsConst (1U << 9)
 
 /* The cJSON structure: */
 typedef struct cJSON
@@ -52,7 +52,7 @@ typedef struct cJSON
     struct cJSON *child;
 
     /* The type of the item, as above. */
-    int type;
+    unsigned int type;
 
     /* The item's string, if type==cJSON_String */
     char *valuestring;
