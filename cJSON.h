@@ -59,8 +59,8 @@ typedef struct cJSON
     /* The item's number, if type==cJSON_Number */
     double valuedouble;
 
-    /* The item's name string, if this item is the child of, or is in the list of subitems of an object. */
-    char *string;
+    /* The item's name, if this item is the child of, or is in the list of subitems of an object. */
+    char *name;
 } cJSON;
 
 typedef struct cJSON_Hooks
@@ -88,9 +88,9 @@ extern void   cJSON_Delete(cJSON *c);
 extern size_t cJSON_GetArraySize(const cJSON *array);
 /* Retrieve item number "item" from array "array". Returns NULL if unsuccessful. */
 extern cJSON *cJSON_GetArrayItem(const cJSON *array, size_t item);
-/* Get item "string" from object. Case insensitive. */
-extern cJSON *cJSON_GetObjectItem(const cJSON *object, const char *string);
-extern int cJSON_HasObjectItem(const cJSON *object, const char *string);
+/* Get item "name" from object. Case insensitive. */
+extern cJSON *cJSON_GetObjectItem(const cJSON *object, const char *name);
+extern int cJSON_HasObjectItem(const cJSON *object, const char *name);
 /* For analysing failed parses. This returns a pointer to the parse error. You'll probably need to look a few chars back to make sense of it. Defined when cJSON_Parse() returns 0. 0 when cJSON_Parse() succeeds. */
 extern const char *cJSON_GetErrorPtr(void);
 
@@ -112,22 +112,22 @@ extern cJSON *cJSON_CreateStringArray(const char **strings, size_t count);
 
 /* Append item to the specified array/object. */
 extern void cJSON_AddItemToArray(cJSON *array, cJSON *item);
-extern void	cJSON_AddItemToObject(cJSON *object, const char *string, cJSON *item);
-extern void	cJSON_AddItemToObjectCS(cJSON *object, const char *string, cJSON *item);	/* Use this when string is definitely const (i.e. a literal, or as good as), and will definitely survive the cJSON object */
+extern void	cJSON_AddItemToObject(cJSON *object, const char *name, cJSON *item);
+extern void	cJSON_AddItemToObjectCS(cJSON *object, const char *name, cJSON *item);	/* Use this when name is definitely const (i.e. a literal, or as good as), and will definitely survive the cJSON object */
 /* Append reference to item to the specified array/object. Use this when you want to add an existing cJSON to a new cJSON, but don't want to corrupt your existing cJSON. */
 extern void cJSON_AddItemReferenceToArray(cJSON *array, cJSON *item);
-extern void	cJSON_AddItemReferenceToObject(cJSON *object, const char *string, cJSON *item);
+extern void	cJSON_AddItemReferenceToObject(cJSON *object, const char *name, cJSON *item);
 
 /* Remove/Detatch items from Arrays/Objects. */
 extern cJSON *cJSON_DetachItemFromArray(cJSON *array, size_t which);
 extern void   cJSON_DeleteItemFromArray(cJSON *array, size_t which);
-extern cJSON *cJSON_DetachItemFromObject(cJSON *object, const char *string);
-extern void   cJSON_DeleteItemFromObject(cJSON *object, const char *string);
+extern cJSON *cJSON_DetachItemFromObject(cJSON *object, const char *name);
+extern void   cJSON_DeleteItemFromObject(cJSON *object, const char *name);
 
 /* Update array items. */
 extern void cJSON_InsertItemInArray(cJSON *array, size_t which, cJSON *newitem); /* Shifts pre-existing items to the right. */
 extern void cJSON_ReplaceItemInArray(cJSON *array, size_t which, cJSON *newitem);
-extern void cJSON_ReplaceItemInObject(cJSON *object,const char *string,cJSON *newitem);
+extern void cJSON_ReplaceItemInObject(cJSON *object,const char *name,cJSON *newitem);
 
 /* Duplicate a cJSON item */
 extern cJSON *cJSON_Duplicate(const cJSON *item, int recurse);
