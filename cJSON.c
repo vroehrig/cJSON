@@ -179,7 +179,6 @@ static const char *parse_number(cJSON *item, const char *num)
     n = sign * n * pow(10.0, (scale + subscale * signsubscale));
 
     item->valuedouble = n;
-    item->valueint = (int)n;
     item->type = cJSON_Number;
 
     return num;
@@ -270,8 +269,9 @@ static char *print_number(const cJSON *item, printbuffer *p, const cJSON_Hooks *
         }
     }
     /* value is an int */
-    else if ((fabs(((double)item->valueint) - d) <= DBL_EPSILON) && (d <= INT_MAX) && (d >= INT_MIN))
+    else if ((fabs(floor(item->valuedouble) - d) <= DBL_EPSILON) && (d <= INT_MAX) && (d >= INT_MIN))
     {
+        int value = (int)item->valuedouble;
         if (p)
         {
             str = ensure(p, 21, hooks);
@@ -283,7 +283,7 @@ static char *print_number(const cJSON *item, printbuffer *p, const cJSON_Hooks *
         }
         if (str)
         {
-            sprintf(str, "%d", item->valueint);
+            sprintf(str, "%d", value);
         }
     }
     /* value is a floating point number */
@@ -865,7 +865,6 @@ static const char *parse_value(cJSON *item, const char *value, const char **ep, 
     if (!strncmp(value, "true", 4))
     {
         item->type = cJSON_True;
-        item->valueint = 1;
         return value + 4;
     }
     if (*value == '\"')
@@ -1925,7 +1924,6 @@ cJSON *internal_cJSON_CreateNumber(double num, const cJSON_Hooks * const hooks)
     {
         item->type = cJSON_Number;
         item->valuedouble = num;
-        item->valueint = (int)num;
     }
 
     return item;
@@ -2136,7 +2134,6 @@ cJSON *internal_cJSON_Duplicate(const cJSON *item, bool recurse, const cJSON_Hoo
     }
     /* Copy over all vars */
     newitem->type = item->type & (~cJSON_IsReference);
-    newitem->valueint = item->valueint;
     newitem->valuedouble = item->valuedouble;
     if (item->valuestring)
     {
