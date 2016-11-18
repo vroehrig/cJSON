@@ -94,15 +94,15 @@ void internal_cJSON_Delete(cJSON *c, const cJSON_Hooks * const hooks)
     while (c)
     {
         next = c->next;
-        if (!(c->type & cJSON_IsReference) && c->child)
+        if (!c->is_reference && c->child)
         {
             internal_cJSON_Delete(c->child, hooks);
         }
-        if (!(c->type & cJSON_IsReference) && c->string)
+        if (!c->is_reference && c->string)
         {
             hooks->free_fn(c->string);
         }
-        if (!(c->type & cJSON_StringIsConst) && c->name)
+        if (!c->string_is_const && c->name)
         {
             hooks->free_fn(c->name);
         }
@@ -1628,7 +1628,7 @@ static cJSON *create_reference(const cJSON *item, const cJSON_Hooks * const hook
     }
     memcpy(ref, item, sizeof(cJSON));
     ref->name = NULL;
-    ref->type |= cJSON_IsReference;
+    ref->is_reference = true;
     ref->next = ref->prev = NULL;
     return ref;
 }
@@ -1683,12 +1683,12 @@ void   cJSON_AddItemToObjectCS(cJSON *object, const char *name, cJSON *item)
     {
         return;
     }
-    if (!(item->type & cJSON_StringIsConst) && item->name)
+    if (!item->string_is_const && item->name)
     {
         hooks->free_fn(item->name);
     }
     item->name = (char*)name;
-    item->type |= cJSON_StringIsConst;
+    item->string_is_const = true;
     cJSON_AddItemToArray(object, item);
 }
 
@@ -1842,7 +1842,7 @@ void internal_cJSON_ReplaceItemInObject(cJSON *object, const char *name, cJSON *
     if(c)
     {
         /* free the old name if not const */
-        if (!(newitem->type & cJSON_StringIsConst) && newitem->name)
+        if (!newitem->string_is_const && newitem->name)
         {
              hooks->free_fn(newitem->name);
         }
@@ -2133,8 +2133,10 @@ cJSON *internal_cJSON_Duplicate(const cJSON *item, bool recurse, const cJSON_Hoo
         return NULL;
     }
     /* Copy over all vars */
-    newitem->type = item->type & (~cJSON_IsReference);
+    newitem->type = item->type;
+    newitem->is_reference = false;
     newitem->number = item->number;
+    newitem->string_is_const = false;
     if (item->string)
     {
         newitem->string = cJSON_strdup(item->string, hooks);

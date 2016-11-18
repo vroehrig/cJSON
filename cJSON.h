@@ -39,9 +39,6 @@ extern "C"
 #define cJSON_Array (1U << 5)
 #define cJSON_Object (1U << 6)
 
-#define cJSON_IsReference (1U << 8)
-#define cJSON_StringIsConst (1U << 9)
-
 /* The cJSON structure: */
 typedef struct cJSON
 {
@@ -52,7 +49,12 @@ typedef struct cJSON
     struct cJSON *child;
 
     /* The type of the item, as above. */
-    unsigned int type;
+    unsigned int type : 12;
+    unsigned int is_reference : 1;
+    unsigned int string_is_const : 1;
+    /* currently unused, reserved for the future */
+    unsigned int reserved1 : 1;
+    unsigned int reserved2 : 1;
 
     /* The item's string, if type==cJSON_String */
     char *string;
