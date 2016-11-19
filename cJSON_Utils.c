@@ -247,10 +247,10 @@ static int cJSONUtils_Compare(cJSON *a, cJSON *b)
     {
         case cJSON_Number:
             /* numeric mismatch. */
-            return (a->number != b->number) ? -2 : 0;
+            return (a->value.number != b->value.number) ? -2 : 0;
         case cJSON_String:
             /* string mismatch. */
-            return (strcmp(a->string, b->string) != 0) ? -3 : 0;
+            return (strcmp(a->value.string, b->value.string) != 0) ? -3 : 0;
         case cJSON_Array:
             for (a = a->child, b = b->child; a && b; a = a->next, b = b->next)
             {
@@ -313,30 +313,30 @@ static int cJSONUtils_ApplyPatch(cJSON *object, cJSON *patch)
     }
 
     /* decode operation */
-    if (!strcmp(op->string, "add"))
+    if (!strcmp(op->value.string, "add"))
     {
         opcode = 0;
     }
-    else if (!strcmp(op->string, "remove"))
+    else if (!strcmp(op->value.string, "remove"))
     {
         opcode = 1;
     }
-    else if (!strcmp(op->string, "replace"))
+    else if (!strcmp(op->value.string, "replace"))
     {
         opcode = 2;
     }
-    else if (!strcmp(op->string, "move"))
+    else if (!strcmp(op->value.string, "move"))
     {
         opcode = 3;
     }
-    else if (!strcmp(op->string, "copy"))
+    else if (!strcmp(op->value.string, "copy"))
     {
         opcode = 4;
     }
-    else if (!strcmp(op->string, "test"))
+    else if (!strcmp(op->value.string, "test"))
     {
         /* compare value: {...} with the given path */
-        return cJSONUtils_Compare(cJSONUtils_GetPointer(object, path->string), cJSON_GetObjectItem(patch, "value"));
+        return cJSONUtils_Compare(cJSONUtils_GetPointer(object, path->value.string), cJSON_GetObjectItem(patch, "value"));
     }
     else
     {
@@ -348,7 +348,7 @@ static int cJSONUtils_ApplyPatch(cJSON *object, cJSON *patch)
     if ((opcode == 1) || (opcode == 2))
     {
         /* Get rid of old. */
-        cJSON_Delete(cJSONUtils_PatchDetach(object, path->string));
+        cJSON_Delete(cJSONUtils_PatchDetach(object, path->value.string));
         if (opcode == 1)
         {
             /* For Remove, this is job done. */
@@ -369,12 +369,12 @@ static int cJSONUtils_ApplyPatch(cJSON *object, cJSON *patch)
         if (opcode == 3)
         {
             /* move */
-            value = cJSONUtils_PatchDetach(object, from->string);
+            value = cJSONUtils_PatchDetach(object, from->value.string);
         }
         if (opcode == 4)
         {
             /* copy */
-            value = cJSONUtils_GetPointer(object, from->string);
+            value = cJSONUtils_GetPointer(object, from->value.string);
         }
         if (!value)
         {
@@ -410,7 +410,7 @@ static int cJSONUtils_ApplyPatch(cJSON *object, cJSON *patch)
     /* Now, just add "value" to "path". */
 
     /* split pointer in parent and child */
-    parentptr = cJSONUtils_strdup(path->string);
+    parentptr = cJSONUtils_strdup(path->value.string);
     childptr = strrchr(parentptr, '/');
     if (childptr)
     {
@@ -514,14 +514,14 @@ static void cJSONUtils_CompareToPatch(cJSON *patches, const char *path, cJSON *f
     switch ((from->type & 0xFF))
     {
         case cJSON_Number:
-            if (from->number != to->number)
+            if (from->value.number != to->value.number)
             {
                 cJSONUtils_GeneratePatch(patches, "replace", path, 0, to);
             }
             return;
 
         case cJSON_String:
-            if (strcmp(from->string, to->string) != 0)
+            if (strcmp(from->value.string, to->value.string) != 0)
             {
                 cJSONUtils_GeneratePatch(patches, "replace", path, 0, to);
             }

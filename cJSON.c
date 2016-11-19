@@ -98,9 +98,9 @@ void internal_cJSON_Delete(cJSON *c, const cJSON_Hooks * const hooks)
         {
             internal_cJSON_Delete(c->child, hooks);
         }
-        if (!c->is_reference && c->string)
+        if (!c->is_reference && (c->type == cJSON_String) && c->value.string)
         {
-            hooks->free_fn(c->string);
+            hooks->free_fn(c->value.string);
         }
         if (!c->string_is_const && c->name)
         {
@@ -178,7 +178,7 @@ static const char *parse_number(cJSON *item, const char *num)
     /* number = +/- number.fraction * 10^+/- exponent */
     n = sign * n * pow(10.0, (scale + subscale * signsubscale));
 
-    item->number = n;
+    item->value.number = n;
     item->type = cJSON_Number;
 
     return num;
@@ -251,7 +251,7 @@ static size_t update(const printbuffer *p)
 static char *print_number(const cJSON *item, printbuffer *p, const cJSON_Hooks * const hooks)
 {
     char *str = NULL;
-    double d = item->number;
+    double d = item->value.number;
     /* special case for 0. */
     if (d == 0)
     {
@@ -269,9 +269,9 @@ static char *print_number(const cJSON *item, printbuffer *p, const cJSON_Hooks *
         }
     }
     /* value is an int */
-    else if ((fabs(floor(item->number) - d) <= DBL_EPSILON) && (d <= INT_MAX) && (d >= INT_MIN))
+    else if ((fabs(floor(item->value.number) - d) <= DBL_EPSILON) && (d <= INT_MAX) && (d >= INT_MIN))
     {
-        int value = (int)item->number;
+        int value = (int)item->value.number;
         if (p)
         {
             str = ensure(p, 21, hooks);
@@ -459,7 +459,7 @@ static const char *parse_string(cJSON *item, const char *str, const char **ep, c
     {
         return NULL;
     }
-    item->string = out; /* assign here so out will be deleted during internal_cJSON_Delete() later */
+    item->value.string = out; /* assign here so out will be deleted during internal_cJSON_Delete() later */
     item->type = cJSON_String;
 
     ptr = str + 1;
@@ -746,7 +746,7 @@ static char *print_string_ptr(const char *str, printbuffer *p, const cJSON_Hooks
 /* Invoke print_string_ptr (which is useful) on an item. */
 static char *print_string(const cJSON *item, printbuffer *p, const cJSON_Hooks * const hooks)
 {
-    return print_string_ptr(item->string, p, hooks);
+    return print_string_ptr(item->value.string, p, hooks);
 }
 
 /* Predeclare these prototypes. */
@@ -1232,8 +1232,8 @@ static const char *parse_object(cJSON *item, const char *value, const char **ep,
         return NULL;
     }
     /* use parsed string as key, not value */
-    child->name = child->string;
-    child->string = NULL;
+    child->name = child->value.string;
+    child->value.string = NULL;
 
     if (*value != ':')
     {
@@ -1267,8 +1267,8 @@ static const char *parse_object(cJSON *item, const char *value, const char **ep,
         }
 
         /* use parsed string as key, not value */
-        child->name = child->string;
-        child->string = NULL;
+        child->name = child->value.string;
+        child->value.string = NULL;
 
         if (*value != ':')
         {
@@ -1922,7 +1922,7 @@ cJSON *internal_cJSON_CreateNumber(double num, const cJSON_Hooks * const hooks)
     if(item)
     {
         item->type = cJSON_Number;
-        item->number = num;
+        item->value.number = num;
     }
 
     return item;
@@ -1938,8 +1938,8 @@ cJSON *internal_cJSON_CreateString(const char *string, const cJSON_Hooks * const
     if(item)
     {
         item->type = cJSON_String;
-        item->string = cJSON_strdup(string, hooks);
-        if(!item->string)
+        item->value.string = cJSON_strdup(string, hooks);
+        if(item->value.string == NULL)
         {
             internal_cJSON_Delete(item, hooks);
             return NULL;
@@ -2134,16 +2134,19 @@ cJSON *internal_cJSON_Duplicate(const cJSON *item, bool recurse, const cJSON_Hoo
     /* Copy over all vars */
     newitem->type = item->type;
     newitem->is_reference = false;
-    newitem->number = item->number;
     newitem->string_is_const = false;
-    if (item->string)
+    if ((item->type == cJSON_String) && (item->value.string != NULL))
     {
-        newitem->string = cJSON_strdup(item->string, hooks);
-        if (!newitem->string)
+        newitem->value.string = cJSON_strdup(item->value.string, hooks);
+        if (newitem->value.string == NULL)
         {
             internal_cJSON_Delete(newitem, hooks);
             return NULL;
         }
+    }
+    else
+    {
+        newitem->value.number = item->value.number;
     }
     if (item->name)
     {
