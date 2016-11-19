@@ -42,6 +42,14 @@ extern "C"
 /* The cJSON structure: */
 typedef struct cJSON
 {
+    /* The item's string, if type==cJSON_String */
+    char *string;
+    /* The item's number, if type==cJSON_Number */
+    double number;
+
+    /* The item's name, if this item is the child of, or is in the list of subitems of an object. */
+    char *name;
+
     /* next allows you to walk array/object chains. Alternatively, use GetArraySize/GetArrayItem/GetObjectItem */
     struct cJSON *next;
     /* An array or object item will have a child pointer pointing to a chain of the items in the array/object. */
@@ -54,14 +62,6 @@ typedef struct cJSON
     /* currently unused, reserved for the future */
     unsigned int reserved1 : 1;
     unsigned int reserved2 : 1;
-
-    /* The item's string, if type==cJSON_String */
-    char *string;
-    /* The item's number, if type==cJSON_Number */
-    double number;
-
-    /* The item's name, if this item is the child of, or is in the list of subitems of an object. */
-    char *name;
 } cJSON;
 
 typedef struct cJSON_Hooks
