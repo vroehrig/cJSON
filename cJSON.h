@@ -47,6 +47,8 @@ typedef struct cJSON
         char *string;
         /* The item's number, if type==cJSON_Number */
         double number;
+        /* The item's boolean value, if type==cJSON_True or type==cJSON_False */
+        int boolean;
     } value;
 
     /* The item's name, if this item is the child of, or is in the list of subitems of an object. */
