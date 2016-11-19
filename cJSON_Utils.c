@@ -610,6 +610,7 @@ static cJSON *cJSONUtils_SortList(cJSON *list)
 {
     cJSON *first = list;
     cJSON *second = list;
+    cJSON *second_previous = NULL;
     cJSON *ptr = list;
 
     if (!list || !list->next)
@@ -634,6 +635,7 @@ static cJSON *cJSONUtils_SortList(cJSON *list)
     while (ptr)
     {
         /* Walk two pointers to find the middle. */
+        second_previous = second;
         second = second->next;
         ptr = ptr->next;
         /* advances ptr two steps at a time */
@@ -642,10 +644,10 @@ static cJSON *cJSONUtils_SortList(cJSON *list)
             ptr = ptr->next;
         }
     }
-    if (second && second->prev)
+    if (second && second_previous)
     {
         /* Split the lists */
-        second->prev->next = NULL;
+        second_previous->next = NULL;
     }
 
     /* Recursively sort the sub-lists. */
@@ -666,7 +668,6 @@ static cJSON *cJSONUtils_SortList(cJSON *list)
             {
                 /* add first element of first list to merged list */
                 ptr->next = first;
-                first->prev = ptr;
                 ptr = first;
             }
             first = first->next;
@@ -682,7 +683,6 @@ static cJSON *cJSONUtils_SortList(cJSON *list)
             {
                 /* add first element of second list to merged list */
                 ptr->next = second;
-                second->prev = ptr;
                 ptr = second;
             }
             second = second->next;
@@ -696,7 +696,6 @@ static cJSON *cJSONUtils_SortList(cJSON *list)
             return first;
         }
         ptr->next = first;
-        first->prev = ptr;
     }
     if (second)
     {
@@ -706,7 +705,6 @@ static cJSON *cJSONUtils_SortList(cJSON *list)
             return second;
         }
         ptr->next = second;
-        second->prev = ptr;
     }
 
     return list;
