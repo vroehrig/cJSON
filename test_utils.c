@@ -10,6 +10,8 @@ int main(void)
     char *patchtext = NULL;
     char *patchedtext = NULL;
 
+    int status = 0;
+
     int i = 0;
     /* JSON Pointer tests: */
     cJSON *root = NULL;
@@ -68,7 +70,6 @@ int main(void)
         {"[1,2]", "{\"a\":\"b\",\"c\":null}", "{\"a\":\"b\"}"},
         {"{}","{\"a\":{\"bb\":{\"ccc\":null}}}", "{\"a\":{\"bb\":{}}}"}
     };
-
 
     /* Misc tests */
     int numbers[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -168,6 +169,7 @@ int main(void)
     printf("JSON Merge Patch tests\n");
     for (i = 0; i < 15; i++)
     {
+        int comparison = 0;
         cJSON *object = cJSON_Parse(merges[i][0]);
         cJSON *patch = cJSON_Parse(merges[i][1]);
         char *before = cJSON_PrintUnformatted(object);
@@ -175,7 +177,10 @@ int main(void)
         printf("Before: [%s] -> [%s] = ", before, patchtext);
         object = cJSONUtils_MergePatch(object, patch);
         after = cJSON_PrintUnformatted(object);
-        printf("[%s] vs [%s] (%s)\n", after, merges[i][2], strcmp(after, merges[i][2]) ? "FAIL" : "OK");
+
+        comparison = strcmp(after, merges[i][2]);
+        status |= comparison;
+        printf("[%s] vs [%s] (%s)\n", after, merges[i][2], comparison ? "FAIL" : "OK");
 
         free(before);
         free(patchtext);
@@ -187,13 +192,16 @@ int main(void)
     /* Generate Merge tests: */
     for (i = 0; i < 15; i++)
     {
+        int comparison = 0;
         cJSON *from = cJSON_Parse(merges[i][0]);
         cJSON *to = cJSON_Parse(merges[i][2]);
         cJSON *patch = cJSONUtils_GenerateMergePatch(from,to);
         from = cJSONUtils_MergePatch(from,patch);
         patchtext = cJSON_PrintUnformatted(patch);
         patchedtext = cJSON_PrintUnformatted(from);
-        printf("Patch [%s] vs [%s] = [%s] vs [%s] (%s)\n", patchtext, merges[i][1], patchedtext, merges[i][2], strcmp(patchedtext, merges[i][2]) ? "FAIL" : "OK");
+        comparison = strcmp(patchedtext, merges[i][2]);
+        status |= comparison;
+        printf("Patch [%s] vs [%s] = [%s] vs [%s] (%s)\n", patchtext, merges[i][1], patchedtext, merges[i][2], comparison ? "FAIL" : "OK");
 
         cJSON_Delete(from);
         cJSON_Delete(to);
@@ -202,5 +210,5 @@ int main(void)
         free(patchedtext);
     }
 
-    return 0;
+    return status;
 }

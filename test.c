@@ -25,7 +25,7 @@
 #include "cJSON.h"
 
 /* Parse text to JSON, then render back to text, and print! */
-void doit(char *text)
+int doit(char *text)
 {
     char *out = NULL;
     cJSON *json = NULL;
@@ -34,6 +34,7 @@ void doit(char *text)
     if (!json)
     {
         printf("Error before: [%s]\n", cJSON_GetErrorPtr());
+        return 1;
     }
     else
     {
@@ -41,15 +42,17 @@ void doit(char *text)
         cJSON_Delete(json);
         printf("%s\n", out);
         free(out);
+        return 0;
     }
 }
 
 /* Read a file, parse, render back, etc. */
-void dofile(char *filename)
+int dofile(char *filename)
 {
     FILE *f = NULL;
     long len = 0;
     char *data = NULL;
+    int status = 1;
 
     /* open in read binary mode */
     f = fopen(filename,"rb");
@@ -64,8 +67,10 @@ void dofile(char *filename)
     data[len] = '\0';
     fclose(f);
 
-    doit(data);
+    status = doit(data);
     free(data);
+
+    return status;
 }
 
 /* Used by some code below as an example datatype. */
@@ -233,6 +238,8 @@ void create_objects(void)
 
 int main(void)
 {
+    int status = 0;
+
     /* a bunch of json: */
     char text1[] =
         "{\n"
@@ -307,12 +314,12 @@ int main(void)
         "</html>\n";
 
     /* Process each json textblock by parsing, then rebuilding: */
-    doit(text1);
-    doit(text2);
-    doit(text3);
-    doit(text4);
-    doit(text5);
-    doit(text6);
+    status |= doit(text1);
+    status |= doit(text2);
+    status |= doit(text3);
+    status |= doit(text4);
+    status |= doit(text5);
+    status |= !doit(text6); /* should fail */
 
     /* Parse standard testfiles: */
     /* dofile("../../tests/test1"); */
@@ -325,5 +332,5 @@ int main(void)
     /* Now some samplecode for building objects concisely: */
     create_objects();
 
-    return 0;
+    return status;
 }

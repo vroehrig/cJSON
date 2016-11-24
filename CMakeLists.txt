@@ -98,13 +98,17 @@ install(FILES ${PROJECT_BINARY_DIR}/cJSONConfig.cmake
 
 option(ENABLE_CJSON_TEST "Enable building cJSON test" ON)
 if(ENABLE_CJSON_TEST)
+    enable_testing()
+
     set(TEST_CJSON cJSON_test)
     add_executable("${TEST_CJSON}" test.c)
     target_link_libraries("${TEST_CJSON}" "${CJSON_LIB}")
+    add_test("${TEST_CJSON}" "${TEST_CJSON}")
 
     if(ENABLE_CJSON_UTILS)
         set(TEST_CJSON_UTILS cJSON_test_utils)
         add_executable("${TEST_CJSON_UTILS}" test_utils.c)
         target_link_libraries("${TEST_CJSON_UTILS}" "${CJSON_UTILS_LIB}")
+        add_test("${TEST_CJSON_UTILS}" "${TEST_CJSON_UTILS}")
     endif()
 endif()
