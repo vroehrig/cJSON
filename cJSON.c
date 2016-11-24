@@ -118,70 +118,20 @@ void cJSON_Delete(cJSON *c)
 /* Parse the input text to generate a number, and populate the result into item. */
 static const char *parse_number(cJSON *item, const char *num)
 {
-    double n = 0;
-    double sign = 1;
-    double scale = 0;
-    int subscale = 0;
-    int signsubscale = 1;
+    double number = 0;
+    char *endpointer = NULL;
 
-    /* Has sign? */
-    if (*num == '-')
+    number = strtod(num, &endpointer);
+    if (num == endpointer)
     {
-        sign = -1;
-        num++;
-    }
-    /* is zero */
-    if (*num == '0')
-    {
-        num++;
-    }
-    /* Number? */
-    if ((*num >= '1') && (*num <= '9'))
-    {
-        do
-        {
-            n = (n * 10.0) + (*num++ - '0');
-        }
-        while ((*num >= '0') && (*num<='9'));
-    }
-    /* Fractional part? */
-    if ((*num == '.') && (num[1] >= '0') && (num[1] <= '9'))
-    {
-        num++;
-        do
-        {
-            n = (n  *10.0) + (*num++ - '0');
-            scale--;
-        } while ((*num >= '0') && (*num <= '9'));
-    }
-    /* Exponent? */
-    if ((*num == 'e') || (*num == 'E'))
-    {
-        num++;
-        /* With sign? */
-        if (*num == '+')
-        {
-            num++;
-        }
-        else if (*num == '-')
-        {
-            signsubscale = -1;
-            num++;
-        }
-        /* Number? */
-        while ((*num>='0') && (*num<='9'))
-        {
-            subscale = (subscale * 10) + (*num++ - '0');
-        }
+        /* parse error */
+        return NULL;
     }
 
-    /* number = +/- number.fraction * 10^+/- exponent */
-    n = sign * n * pow(10.0, (scale + subscale * signsubscale));
-
-    item->value.number = n;
+    item->value.number = number;
     item->type = cJSON_Number;
 
-    return num;
+    return endpointer;
 }
 
 typedef struct
